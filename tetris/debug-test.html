@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - Areia Quântica</title>
+    <style>
+        body {
+            background: #0a0a2a;
+            color: #00e6e6;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #004400; }
+        .error { background: #440000; }
+        .warning { background: #444400; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Test - Areia Quântica</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}`;
+            results.appendChild(div);
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        async function testModule(moduleName, importPath) {
+            try {
+                addResult(`Testando ${moduleName}...`, 'warning');
+                const module = await import(importPath);
+                addResult(`${moduleName} carregado com sucesso`);
+                return true;
+            } catch (error) {
+                addResult(`${moduleName} falhou: ${error.message}`, 'error');
+                console.error(`Erro detalhado em ${moduleName}:`, error);
+                return false;
+            }
+        }
+
+        async function runTests() {
+            addResult('Iniciando testes de debug...', 'warning');
+            
+            const tests = [
+                ['Config', './js/config/Config.js'],
+                ['PerformanceMonitor', './js/utils/PerformanceMonitor.js'],
+                ['AudioManager', './js/core/AudioManager.js'],
+                ['UIManager', './js/ui/UIManager.js'],
+                ['SandSimulation', './js/core/SandSimulation.js'],
+                ['PieceManager', './js/core/PieceManager.js'],
+                ['CollisionSystem', './js/core/CollisionSystem.js'],
+                ['ScoreSystem', './js/core/ScoreSystem.js'],
+                ['ParticleSystem', './js/core/ParticleSystem.js'],
+                ['GameEngine', './js/core/GameEngine.js']
+            ];
+
+            let successCount = 0;
+            
+            for (const [name, path] of tests) {
+                const success = await testModule(name, path);
+                if (success) successCount++;
+                
+                // Pequena pausa entre testes
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            addResult(`Testes concluídos: ${successCount}/${tests.length} módulos carregados com sucesso`, 
+                     successCount === tests.length ? 'success' : 'error');
+
+            // Teste final do main.js
+            try {
+                addResult('Testando main.js...', 'warning');
+                const { QuantumSandGame } = await import('./js/main.js');
+                addResult('main.js carregado com sucesso');
+                
+                // Teste de inicialização
+                addResult('Testando inicialização do jogo...', 'warning');
+                const game = new QuantumSandGame();
+                await game.initialize();
+                addResult('Jogo inicializado com sucesso!', 'success');
+                
+            } catch (error) {
+                addResult(`main.js falhou: ${error.message}`, 'error');
+                console.error('Erro detalhado no main.js:', error);
+            }
+        }
+
+        // Executa os testes quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('DOM carregado, iniciando testes...', 'warning');
+            runTests();
+        });
+    </script>
+</body>
+</html>
