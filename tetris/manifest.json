@@ -1,0 +1,24 @@
+{
+  "name": "Areia Quântica - Tetris Profissional",
+  "short_name": "Areia Quântica",
+  "description": "Um Tetris revolucionário com simulação de física de areia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a2a",
+  "theme_color": "#00e6e6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "pt-BR"
+}
