@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Areia Quântica</title>
+    <style>
+        body {
+            background: #0a0a2a;
+            color: #00e6e6;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #004400; }
+        .error { background: #440000; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Módulos - Areia Quântica</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = `${isSuccess ? '✅' : '❌'} ${message}`;
+            results.appendChild(div);
+        }
+
+        try {
+            // Teste 1: Config
+            addResult('Testando importação do Config...');
+            const { Config } = await import('./js/config/Config.js');
+            addResult('Config carregado com sucesso');
+            
+            // Teste 2: PerformanceMonitor
+            addResult('Testando importação do PerformanceMonitor...');
+            const { PerformanceMonitor } = await import('./js/utils/PerformanceMonitor.js');
+            addResult('PerformanceMonitor carregado com sucesso');
+            
+            // Teste 3: AudioManager
+            addResult('Testando importação do AudioManager...');
+            const { AudioManager } = await import('./js/core/AudioManager.js');
+            addResult('AudioManager carregado com sucesso');
+            
+            // Teste 4: UIManager
+            addResult('Testando importação do UIManager...');
+            const { UIManager } = await import('./js/ui/UIManager.js');
+            addResult('UIManager carregado com sucesso');
+            
+            // Teste 5: SandSimulation
+            addResult('Testando importação do SandSimulation...');
+            const { SandSimulation } = await import('./js/core/SandSimulation.js');
+            addResult('SandSimulation carregado com sucesso');
+            
+            // Teste 6: PieceManager
+            addResult('Testando importação do PieceManager...');
+            const { PieceManager } = await import('./js/core/PieceManager.js');
+            addResult('PieceManager carregado com sucesso');
+            
+            // Teste 7: CollisionSystem
+            addResult('Testando importação do CollisionSystem...');
+            const { CollisionSystem } = await import('./js/core/CollisionSystem.js');
+            addResult('CollisionSystem carregado com sucesso');
+            
+            // Teste 8: ScoreSystem
+            addResult('Testando importação do ScoreSystem...');
+            const { ScoreSystem } = await import('./js/core/ScoreSystem.js');
+            addResult('ScoreSystem carregado com sucesso');
+            
+            // Teste 9: ParticleSystem
+            addResult('Testando importação do ParticleSystem...');
+            const { ParticleSystem } = await import('./js/core/ParticleSystem.js');
+            addResult('ParticleSystem carregado com sucesso');
+            
+            // Teste 10: GameEngine
+            addResult('Testando importação do GameEngine...');
+            const { GameEngine } = await import('./js/core/GameEngine.js');
+            addResult('GameEngine carregado com sucesso');
+            
+            // Teste 11: Main
+            addResult('Testando importação do main.js...');
+            const { QuantumSandGame } = await import('./js/main.js');
+            addResult('Main.js carregado com sucesso');
+            
+            addResult('🎉 Todos os módulos carregados com sucesso!');
+            
+        } catch (error) {
+            addResult(`Erro: ${error.message}`, false);
+            console.error('Erro detalhado:', error);
+        }
+    </script>
+</body>
+</html>
