@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Areia Quântica — Compact</title>
+<style>
+:root{--bg:#0a0a2a;--accent:#00ffff;--text:#00e6e6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(135deg,#0a0a2a,#1a0a3a);color:var(--text);font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh}
+#game{width:700px;max-width:95vw}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+canvas{background:#0d0d0d;border:3px solid var(--accent);border-radius:12px;display:block;width:100%;height:auto}
+.controls{display:flex;gap:.5rem;margin-top:.5rem}
+.btn{background:rgba(21,8,45,.9);border:1px solid rgba(0,255,255,.12);padding:.4rem .8rem;border-radius:8px;color:var(--text);cursor:pointer}
+.info{font-size:.9rem}
+</style>
+</head>
+<body>
+<div id="game">
+  <header>
+    <div class="info">Areia Quântica — Compact</div>
+    <div class="info">Score: <span id="score">0</span></div>
+  </header>
+  <canvas id="c"></canvas>
+  <div class="controls">
+    <button class="btn" id="start">Start</button>
+    <button class="btn" id="pause">Pause</button>
+    <button class="btn" id="reset">Reset</button>
+  </div>
+</div>
+<script>
+// Compact Tetris-like simplified implementation
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const cols = 10; const rows = 20; const tile = 30;
+  canvas.width = cols * tile; canvas.height = rows * tile;
+  let grid = Array.from({length:rows},()=>Array(cols).fill(0));
+  let scoreEl = document.getElementById('score'); let score=0;
+
+  const pieces = [
+    [[1,1,1,1]],
+    [[1,1],[1,1]],
+    [[0,1,0],[1,1,1]],
+    [[1,0,0],[1,1,1]],
+    [[0,0,1],[1,1,1]]
+  ];
+
+  function randPiece(){return JSON.parse(JSON.stringify(pieces[Math.floor(Math.random()*pieces.length)]));}
+
+  let current = {shape:randPiece(),x:3,y:0};
+  let running=false, paused=false, last=0, dropInterval=500;
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // bg
+    ctx.fillStyle='#0d0d0d'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    // grid blocks
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(grid[r][c]){
+      drawCell(c,r,grid[r][c]);
+    }
+    // current piece
+    const s=current.shape; for(let r=0;r<s.length;r++)for(let c=0;c<s[r].length;c++)if(s[r][c]){
+      drawCell(current.x+c,current.y+r,2);
+    }
+  }
+  function drawCell(x,y,type){
+    const colors=['#000','#00e6e6','#00ffff'];
+    ctx.fillStyle=colors[type%colors.length];
+    ctx.fillRect(x*tile+1,y*tile+1,tile-2,tile-2);
+  }
+
+  function collide(sx,sy,shape){
+    for(let r=0;r<shape.length;r++)for(let c=0;c<shape[r].length;c++)if(shape[r][c]){
+      const x=sx+c,y=sy+r;
+      if(x<0||x>=cols||y>=rows) return true;
+      if(y>=0 && grid[y][x]) return true;
+    }
+    return false;
+  }
+
+  function merge(){
+    const s=current.shape; for(let r=0;r<s.length;r++)for(let c=0;c<s[r].length;c++)if(s[r][c]){
+      const x=current.x+c,y=current.y+r; if(y>=0) grid[y][x]=1;
+    }
+  }
+
+  function clearLines(){
+    let cleared=0;
+    for(let r=rows-1;r>=0;r--){
+      if(grid[r].every(v=>v)){ grid.splice(r,1); grid.unshift(Array(cols).fill(0)); cleared++; r++; }
+    }
+    if(cleared){ score+=cleared*100; scoreEl.textContent=score; }
+  }
+
+  function rotate(shape){
+    const h=shape.length,w=shape[0].length; const res=[];
+    for(let c=0;c<w;c++){res[c]=[]; for(let r=h-1;r>=0;r--) res[c].push(shape[r][c]);}
+    return res;
+  }
+
+  function step(now){
+    if(!running||paused) { last=now; requestAnimationFrame(step); return; }
+    if(now-last>dropInterval){
+      last=now; current.y++;
+      if(collide(current.x,current.y,current.shape)){
+        current.y--; merge(); clearLines(); current={shape:randPiece(),x:3,y:0};
+        if(collide(current.x,current.y,current.shape)){ running=false; alert('Game Over! Score: '+score); }
+      }
+    }
+    draw(); requestAnimationFrame(step);
+  }
+
+  document.addEventListener('keydown',(e)=>{
+    if(!running) return;
+    if(e.key==='ArrowLeft'){ if(!collide(current.x-1,current.y,current.shape)) current.x--; }
+    if(e.key==='ArrowRight'){ if(!collide(current.x+1,current.y,current.shape)) current.x++; }
+    if(e.key==='ArrowDown'){ current.y++; if(collide(current.x,current.y,current.shape)){ current.y--; merge(); clearLines(); current={shape:randPiece(),x:3,y:0}; }}
+    if(e.key==='ArrowUp' || e.key==='x'){ const r=rotate(current.shape); if(!collide(current.x,current.y,r)) current.shape=r; }
+    draw();
+  });
+
+  document.getElementById('start').addEventListener('click',()=>{ if(!running){ running=true; paused=false; last=performance.now(); requestAnimationFrame(step);} });
+  document.getElementById('pause').addEventListener('click',()=>{ paused=!paused; });
+  document.getElementById('reset').addEventListener('click',()=>{ grid=Array.from({length:rows},()=>Array(cols).fill(0)); score=0; scoreEl.textContent=score; current={shape:randPiece(),x:3,y:0}; running=false; paused=false; draw(); });
+
+  // initial draw
+  draw();
+})();
+</script>
+</body>
+</html>
