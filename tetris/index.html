@@ -178,6 +178,23 @@
     </div>
     
     <!-- Scripts modulares -->
-    <script type="module" src="js/main.js"></script>
+    <!-- Import via módulo inline com fallback para erro -->
+    <script type="module">
+        (async () => {
+            try {
+                const module = await import('./js/main.js');
+                // se o módulo exportar init, chamar
+                if (module && typeof module.init === 'function') module.init();
+                // mostrar container e esconder loading
+                document.getElementById('loading-screen').style.display = 'none';
+                const gc = document.getElementById('game-container');
+                gc.style.display = 'block';
+            } catch (err) {
+                console.error('Erro ao carregar o módulo do jogo:', err);
+                const txt = document.getElementById('loading-text');
+                txt.textContent = 'Não foi possível carregar o jogo. Abra o Console (F12) para ver erros.';
+            }
+        })();
+    </script>
 </body>
 </html>
