@@ -32,13 +32,14 @@ export class AudioManager {
     }
 
     async loadSounds() {
+        const basePath = './audio/';
         const soundFiles = {
-            'piece-move': 'audio/pop.mp3',
-            'piece-land': 'audio/pop.mp3',
-            'line-clear': 'audio/pop.mp3',
-            'level-up': 'audio/pop.mp3',
-            'game-over': 'audio/pop.mp3',
-            'background': 'audio/bg-sound.mp3'
+            'piece-move': basePath + 'pop.mp3',
+            'piece-land': basePath + 'pop.mp3',
+            'line-clear': basePath + 'pop.mp3',
+            'level-up': basePath + 'pop.mp3',
+            'game-over': basePath + 'pop.mp3',
+            'background': basePath + 'bg-sound.mp3'
         };
 
         for (const [name, path] of Object.entries(soundFiles)) {
@@ -46,8 +47,13 @@ export class AudioManager {
                 const response = await fetch(path);
                 if (response.ok) {
                     const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    // decodeAudioData may require a Promise wrapper in some browsers
+                    const audioBuffer = await new Promise((resolve, reject) => {
+                        this.audioContext.decodeAudioData(arrayBuffer, resolve, reject);
+                    });
                     this.sounds.set(name, audioBuffer);
+                } else {
+                    console.warn(`⚠️ Não foi possível carregar (status ${response.status}): ${path}`);
                 }
             } catch (error) {
                 console.warn(`⚠️ Não foi possível carregar: ${path}`, error);
@@ -79,8 +85,8 @@ export class AudioManager {
             
             // Limpa recursos após tocar
             source.onended = () => {
-                source.disconnect();
-                gainNode.disconnect();
+                try { source.disconnect(); } catch (e) {}
+                try { gainNode.disconnect(); } catch (e) {}
             };
         } catch (error) {
             console.warn('Erro ao tocar som:', error);
@@ -121,7 +127,8 @@ export class AudioManager {
     }
 
     resumeBackgroundMusic() {
-        if (!this.backgroundMusic) {
+        // Recria a música de fundo a partir do buffer
+        if (!this.backgroundMusic && this.sounds.has('background')) {
             this.playBackgroundMusic();
         }
     }
@@ -164,6 +171,3 @@ export class AudioManager {
         setTimeout(() => this.playSound('level-up', { pitch: 1.2 }), 200);
     }
 }
-
-
-
